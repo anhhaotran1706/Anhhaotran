@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trò Chơi Con Rắn</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #00008b, #4b0082, #8a2be2);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        canvas {
+            border: 1px solid white;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        #restart {
+            display: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background: #f44336;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #score {
+            font-size: 24px;
+            margin: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.5);
+        }
+        #title {
+            font-size: 32px;
+            margin-bottom: 10px;
+            padding: 10px 30px;
+            background: #4b0082;
+            border-radius: 50px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
+            color: gold;
+            font-weight: bold;
+        }
+        .trophy-flash {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: gold;
+            text-align: center;
+            animation: trophyJump 2s ease-in-out;
+        }
+        .small-trophy {
+            display: none;
+            position: absolute;
+            font-size: 24px;
+            color: gold;
+            animation: floatTrophies 2s ease-in-out;
+        }
+
+        @keyframes trophyJump {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -60%) scale(1.2); }
+        }
+
+        @keyframes floatTrophies {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-100px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div id="title">Trò Chơi Con Rắn</div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div id="score">Điểm: 0</div>
+    <button id="restart">Chơi Lại</button>
+    <div class="trophy-flash" id="trophy">🏆 CHIẾN THẮNG 🏆</div>
+    
+    <!-- Âm thanh -->
+    <audio id="victory-sound">
+        <source src="victory-sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="eat-sound">
+        <source src="eat-sound.mp3" type="audio/mpeg"> <!-- Âm thanh khi ăn -->
+    </audio>
+    <audio id="background-music" loop>
+        <source src="background-music.mp3" type="audio/mpeg"> <!-- Nhạc nền -->
+    </audio>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const trophy = document.getElementById('trophy');
+        const victorySound = document.getElementById('victory-sound');
+        const eatSound = document.getElementById('eat-sound');
+        const backgroundMusic = document.getElementById('background-music');
+        const smallTrophies = [];
+
+        const box = 20;
+        let snake, direction, food, score, game;
+
+        function init() {
+            snake = [{ x: 9 * box, y: 9 * box }];
+            direction = 'RIGHT';
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box
+            };
+            score = 0;
+            document.getElementById('score').innerText = 'Điểm: ' + score;
+            document.getElementById('restart').style.display = 'none';
+            trophy.style.display = 'none';
+            clearInterval(game);
+            game = setInterval(draw, 100);
+            backgroundMusic.play();
+        }
+
+        document.addEventListener('keydown', changeDirection);
+        document.getElementById('restart').addEventListener('click', init);
+
+        function changeDirection(event) {
+            if (event.keyCode === 37 && direction !== 'RIGHT') direction = 'LEFT';
+            if (event.keyCode === 38 && direction !== 'DOWN') direction = 'UP';
+            if (event.keyCode === 39 && direction !== 'LEFT') direction = 'RIGHT';
+            if (event.keyCode === 40 && direction !== 'UP') direction = 'DOWN';
+        }
+
+        function collision(head, array) {
+            for (let i = 0; i < array.length; i++) {
+                if (head.x === array[i].x && head.y === array[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function showTrophy() {
+            trophy.style.display = 'block';
+            victorySound.play();
+            setTimeout(() => {
+                trophy.style.display = 'none';
+            }, 2000);
+
+            // Tạo những chiếc cúp nhỏ bay lên
+            for (let i = 0; i < 20; i++) {
+                let smallTrophy = document.createElement('div');
+                smallTrophy.classList.add('small-trophy');
+                smallTrophy.innerText = '🏆';
+                document.body.appendChild(smallTrophy);
+                smallTrophy.style.left = Math.random() * window.innerWidth + 'px';
+                smallTrophy.style.top = Math.random() * window.innerHeight + 'px';
+                smallTrophy.style.display = 'block';
+
+                setTimeout(() => {
+                    smallTrophy.remove(); // Xóa cúp nhỏ sau khi hiệu ứng kết thúc
+                }, 2000);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillStyle = (i === 0) ? 'green' : 'white';
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                ctx.strokeStyle = 'black';
+                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+            }
+
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, box, box);
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (direction === 'LEFT') snakeX -= box;
+            if (direction === 'UP') snakeY -= box;
+            if (direction === 'RIGHT') snakeX += box;
+            if (direction === 'DOWN') snakeY += box;
+
+            // Kiểm tra ra khỏi biên và di chuyển sang phía đối diện
+            if (snakeX < 0) {
+                snakeX = canvas.width - box;
+            } else if (snakeX >= canvas.width) {
+                snakeX = 0;
+            }
+
+            if (snakeY < 0) {
+                snakeY = canvas.height - box;
+            } else if (snakeY >= canvas.height) {
+                snakeY = 0;
+            }
+
+            // Kiểm tra ăn thức ăn
+            if (snakeX === food.x && snakeY === food.y) {
+                score++;
+                document.getElementById('score').innerText = 'Điểm: ' + score;
+                food = {
+                    x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                    y: Math.floor(Math.random() * (canvas.height / box)) * box
+                };
+                eatSound.play(); // Âm thanh khi ăn thức ăn
+
+                if (score % 10 === 0) {
+                    showTrophy(); // Hiện cúp khi đạt mốc điểm
+                }
+
+            } else {
+                snake.pop();
+            }
+
+            let newHead = { x: snakeX, y: snakeY };
+
+            if (collision(newHead, snake)) {
+                clearInterval(game);
+                document.getElementById('restart').style.display = 'block';
+                backgroundMusic.pause();
+                alert('Game Over! Điểm số: ' + score);
+                return;
+            }
+
+            snake.unshift(newHead);
+        }
+
+        init();
+    </script>
+</body>
+</html>

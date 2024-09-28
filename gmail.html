@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Gmail</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(45deg, #0000ff, #8a2be2, #1e90ff, #9370db); /* Nền mix xanh dương và tím */
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.9); /* Nền trắng với độ trong suốt */
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 320px; /* Chiều rộng ô đăng nhập */
+            text-align: center; /* Canh giữa nội dung */
+        }
+        h2 {
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff007f, #ff8c00, #ffd700, #8cc634, #00bfff, #6a5acd, #ee82ee); /* Màu sắc bảy sắc cầu vồng */
+            -webkit-background-clip: text; /* Cắt nền để chỉ hiển thị ở chữ */
+            -webkit-text-fill-color: transparent; /* Làm cho màu chữ trong suốt */
+            font-size: 24px; /* Kích thước chữ */
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px); /* Kéo sang trái một chút */
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            transition: border-color 0.3s;
+            text-align: left; /* Canh trái nội dung */
+        }
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #4285F4; /* Đổi màu biên khi focus */
+            outline: none; /* Bỏ outline */
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px; /* Đặt khoảng cách trên cho nút */
+        }
+        button:hover {
+            background-color: #357AE8; /* Màu nền khi hover */
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #4285F4; /* Màu link */
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline; /* Gạch chân link khi hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Đăng Nhập Gmail</h2>
+        <form id="loginForm">
+            <input type="text" id="email" placeholder="Địa chỉ email" required>
+            <input type="password" id="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng Nhập</button>
+        </form>
+        <div class="footer">
+            <p><a href="#">Quên mật khẩu?</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Xử lý đăng nhập ở đây
+            console.log('Địa chỉ email:', email);
+            console.log('Mật khẩu:', password);
+
+            alert('Đăng nhập thành công!');
+        });
+    </script>
+</body>
+</html>
